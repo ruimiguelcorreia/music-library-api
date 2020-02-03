@@ -11,6 +11,8 @@ exports.create = (req, res) => {
   });
 };
 
-exports.find = (req,res) => {
-  const artist
+exports.list = (req, res) => {
+  Artist.find().then(artists => {
+    res.status(200).json(artists);
+  });
 };
