@@ -20,3 +20,9 @@ exports.create = (req, res) => {
     }
   });
 };
+
+exports.list = (req, res) => {
+  Artist.find({}, (err, albums) => {
+    res.status(200).json(albums);
+  });
+};

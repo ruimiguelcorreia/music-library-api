@@ -83,4 +83,29 @@ describe('/albums', () => {
         });
     });
   });
+
+  describe('with albums in the database', () => {
+    let albums;
+    beforeEach(done => {
+      Promise.all([
+        Album.create({ name: 'Lonerism', year: 2012 }),
+        Album.create({ name: 'Currents', year: 2015 }),
+      ]).then(documents => {
+        albums = documents;
+        done();
+      });
+    });
+
+    describe('GET /artists/:artistId/albums', () => {
+      it('gets all albums', done => {
+        request(app)
+          .get(`/artists/${artist._id}/albums`)
+          .then(res => {
+            expect(res.status).toBe(200);
+            expect(res.body.length).toBe(2);
+          });
+        done();
+      });
+    });
+  });
 });
