@@ -11,12 +11,12 @@ exports.create = (req, res) => {
       res.status(404).json({ error: 'The album could not be found.' });
     } else {
       Artist.findById(artistId, (err, artist) => {
-        if (!artist) {
+        if (!artist._id) {
           res.status(404).json({ error: 'The artist could not be found.' });
         } else {
           const song = new Song({
             name: req.body.name,
-            artist,
+            artistId,
             album,
           });
 
@@ -25,6 +25,22 @@ exports.create = (req, res) => {
           });
         }
       });
+    }
+  });
+};
+
+exports.list = (req, res) => {
+  Song.find().then(song => {
+    res.status(200).json(song);
+  });
+};
+
+exports.find = (req, res) => {
+  Song.findOne({ _id: req.params.id }, (err, song) => {
+    if (err) {
+      res.status(404).send('The song is not in the database.');
+    } else {
+      res.status(200).json(song);
     }
   });
 };

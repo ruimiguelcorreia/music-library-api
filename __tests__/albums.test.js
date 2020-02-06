@@ -96,15 +96,57 @@ describe('/albums', () => {
       });
     });
 
-    describe('GET /artists/:artistId/albums', () => {
+    describe('GET /albums', () => {
       it('gets all albums', done => {
         request(app)
-          .get(`/artists/${artist._id}/albums`)
+          .get(`/albums`)
           .then(res => {
             expect(res.status).toBe(200);
             expect(res.body.length).toBe(2);
           });
         done();
+      });
+    });
+
+    describe('PATCH /albums/:albumId', () => {
+      it('updates selected album information', done => {
+        const album = albums[0];
+        request(app)
+          .patch(`/albums/${album._id}`)
+          .send({ name: 'testing' })
+          .then(res => {
+            expect(res.status).toBe(200);
+            Album.findById(album._id, (_, updatedAlbum) => {
+              expect(updatedAlbum.name).toBe('testing');
+              done();
+            });
+          });
+      });
+    });
+
+    describe('DELETE /albums/:albumId', () => {
+      it('deletes the selected album', done => {
+        const album = albums[0];
+        request(app)
+          .delete(`/albums/${album._id}`)
+          .then(res => {
+            expect(res.status).toBe(204);
+            Album.findById(album._id, (error, deletedAlbum) => {
+              expect(error).toBe(null);
+              expect(deletedAlbum).toBe(null);
+              done();
+            });
+          });
+      });
+
+      it('returns a 404 if the album does not exist', done => {
+        request(app)
+          .delete('/albums/123')
+          .then(res => {
+            expect(res.status).toBe(404);
+            expect(res.body.error).toBe('The album could not be found.');
+            done();
+          });
       });
     });
   });

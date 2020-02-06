@@ -43,10 +43,10 @@ describe('Songs', () => {
     done();
   });
 
-  describe('POST /album/:albumId/song', () => {
+  describe('POST /albums/:albumId/song', () => {
     it('creates a new song under an album', done => {
       request(app)
-        .post(`/album/${albumId}/song`)
+        .post(`/albums/${albumId}/song`)
         .send({
           artistId,
           name: 'Solitude Is Bliss',
@@ -74,6 +74,41 @@ describe('Songs', () => {
           });
           done();
         });
+    });
+  });
+
+  describe('with songs in the database', () => {
+    let songs;
+    beforeEach(done => {
+      Promise.all([Song.create({ name: 'Feel Again' })]).then(documents => {
+        songs = documents;
+        done();
+      });
+    });
+
+    describe('GET /songs', () => {
+      it('gets all the songs', done => {
+        request(app)
+          .get('/songs')
+          .then(res => {
+            expect(res.status).toBe(200);
+            expect(res.body.length).toBe(1);
+            done();
+          });
+      });
+    });
+
+    describe('GET /songs/:songId', () => {
+      it('gets song by id', done => {
+        const song = songs[0];
+        request(app)
+          .get(`/songs/${song._id}`)
+          .then(res => {
+            expect(res.status).toBe(200);
+            expect(res.body.name).toBe('Feel Again');
+            done();
+          });
+      });
     });
   });
 });

@@ -22,7 +22,38 @@ exports.create = (req, res) => {
 };
 
 exports.list = (req, res) => {
-  Artist.find({}, (err, albums) => {
-    res.status(200).json(albums);
+  Album.find().then(album => {
+    res.status(200).json(album);
+  });
+};
+
+exports.find = (req, res) => {
+  Album.findOne({ _id: req.params.id }, (err, album) => {
+    if (!album) {
+      res.status(404).json({ error: 'The album could not be found.' });
+    } else {
+      res.status(200).json(album);
+    }
+  });
+};
+
+exports.update = (req, res) => {
+  Album.findById({ _id: req.params.albumId }, (err, album) => {
+    album.set(req.body);
+    album.save().then(updatedAlbum => {
+      res.status(200).json(updatedAlbum);
+    });
+  });
+};
+
+exports.delete = (req, res) => {
+  Album.findById({ _id: req.params.albumId }, (err, album) => {
+    if (!album) {
+      res.status(404).send({ error: 'The album could not be found.' });
+    } else {
+      album.remove().then(() => {
+        res.status(204).json();
+      });
+    }
   });
 };
