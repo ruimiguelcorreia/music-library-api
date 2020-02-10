@@ -40,4 +40,8 @@ app.get('/songs', songControllers.list);
 
 app.get('/songs/:songId', songControllers.find);
 
+app.patch('/songs/:songId', songControllers.update);
+
+app.delete('/songs/:songId', songControllers.delete);
+
 module.exports = app;

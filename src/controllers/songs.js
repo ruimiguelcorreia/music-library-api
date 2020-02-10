@@ -6,27 +6,24 @@ exports.create = (req, res) => {
   const { albumId } = req.params;
   const { artistId } = req.body;
 
-  Album.findById(albumId, (err, album) => {
-    if (!album) {
-      res.status(404).json({ error: 'The album could not be found.' });
-    } else {
-      Artist.findById(artistId, (err, artist) => {
-        if (!artist._id) {
-          res.status(404).json({ error: 'The artist could not be found.' });
-        } else {
-          const song = new Song({
-            name: req.body.name,
-            artistId,
-            album,
-          });
-
-          song.save().then(() => {
-            res.status(200).json(song);
-          });
-        }
-      });
-    }
+  const song = new Song({
+    name: req.body.name,
+    album: albumId,
+    artist: artistId,
   });
+
+  if (!song.album) {
+    res.status(404).json({ error: 'The album could not be found.' });
+  } else {
+    song.save().then(savedSong => {
+      Song.findOne({ _id: savedSong._id })
+        .populate({ path: 'album' })
+        .populate({ path: 'artist' })
+        .exec((err, songId) => {
+          res.status(200).json(songId);
+        });
+    });
+  }
 };
 
 exports.list = (req, res) => {
@@ -36,11 +33,36 @@ exports.list = (req, res) => {
 };
 
 exports.find = (req, res) => {
-  Song.findOne({ _id: req.params.id }, (err, song) => {
-    if (err) {
-      res.status(404).send('The song is not in the database.');
+  Song.findById(req.params.songId, (err, song) => {
+    if (!song) {
+      res.status(404).json({ error: 'The song could not be found.' });
     } else {
       res.status(200).json(song);
+    }
+  });
+};
+
+exports.update = (req, res) => {
+  Song.findById(req.params.songId, (err, song) => {
+    if (!song) {
+      res.status(404).json({ error: 'The song could not be found.' });
+    } else {
+      song.set(req.body);
+      song.save().then(updateSong => {
+        res.status(200).json(updateSong);
+      });
+    }
+  });
+};
+
+exports.delete = (req, res) => {
+  Song.findById(req.params.songId, (err, song) => {
+    if (!song) {
+      res.status(404).json({ error: 'The song could not be found.' });
+    } else {
+      song.remove().then(() => {
+        res.status(204).json();
+      });
     }
   });
 };

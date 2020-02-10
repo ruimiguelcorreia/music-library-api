@@ -39,6 +39,7 @@ describe('Songs', () => {
   });
 
   afterAll(done => {
+    mongoose.connection.db.dropDatabase();
     mongoose.connection.close();
     done();
   });
@@ -106,6 +107,48 @@ describe('Songs', () => {
           .then(res => {
             expect(res.status).toBe(200);
             expect(res.body.name).toBe('Feel Again');
+            done();
+          });
+      });
+    });
+
+    describe('PATCH /songs/:songId', () => {
+      it('updates selected song information', done => {
+        const song = songs[0];
+        request(app)
+          .patch(`/songs/${song._id}`)
+          .send({ name: 'testing' })
+          .then(res => {
+            expect(res.status).toBe(200);
+            Song.findById(song._id, (_, updatedSong) => {
+              expect(updatedSong.name).toBe('testing');
+              done();
+            });
+          });
+      });
+    });
+
+    describe('DELETE /songs/:songId', () => {
+      it('deletes the selected song', done => {
+        const song = songs[0];
+        request(app)
+          .delete(`/songs/${song._id}`)
+          .then(res => {
+            expect(res.status).toBe(204);
+            Song.findById(song._id, (error, deletedSong) => {
+              expect(error).toBe(null);
+              expect(deletedSong).toBe(null);
+              done();
+            });
+          });
+      });
+
+      it('returns a 404 if the song does not exist', done => {
+        request(app)
+          .delete('/songs/1234')
+          .then(res => {
+            expect(res.status).toBe(404);
+            expect(res.body.error).toBe('The song could not be found.');
             done();
           });
       });
